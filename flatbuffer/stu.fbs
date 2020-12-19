@@ -1,0 +1,20 @@
+namespace MyFb;
+
+table MyObj2 {
+  name:string;
+  id:uint64 = 0;
+}
+
+struct POS {
+  x:uint32;
+  y:uint32;
+}
+
+table MyObj {
+  name:string;
+  id:uint64 = 0;
+  mylist:[uint32];
+  pos:POS;
+}
+
+root_type MyObj;
