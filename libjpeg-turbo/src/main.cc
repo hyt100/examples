@@ -30,7 +30,9 @@ int save_nv12(const char *filename, uint8_t *buf, int width, int height, int str
 
 void test()
 {
-  FileReader file("../test_data/xiyang.jpeg");
+  // FileReader file("../test_data/xiyang.jpeg");
+  // FileReader file("../test_data/testorig.jpg");
+  FileReader file("image.jpg");
   if (file.is_error())
     return;
   
