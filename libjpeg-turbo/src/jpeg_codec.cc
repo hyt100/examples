@@ -23,9 +23,10 @@ void yuv444_to_nv12(uint8_t *nv12, int nv12_stride, uint8_t *yuv444, int yuv444_
   int padding = nv12_stride - width;
   uint8_t y, u, v;
 
-  for (int i; i < height; ++i) {
-    for (int j; j < width; ++j) {
-      int start = i * yuv444_stride + j * 3;
+  for (int i = 0; i < height; ++i) {
+    int row_start = i * yuv444_stride;
+    for (int j = 0; j < width; ++j) {
+      int start = row_start + j * 3;
       y = yuv444[start];
       u = yuv444[start + 1];
       v = yuv444[start + 2];
@@ -131,11 +132,12 @@ static int do_read_jpeg_data(struct jpeg_decompress_struct *cinfo, JpgCodec *cod
   /* Here we use the library's state variable cinfo->output_scanline as the
    * loop counter, so that we don't have to keep track ourselves.
    */
-  int expect_width = (cinfo->output_width % 2 == 0) ? cinfo->output_width : (cinfo->output_width - 1);
-  int expect_hight = (cinfo->output_height % 2 == 0) ? cinfo->output_height : (cinfo->output_height - 1);
-  int expect_sride = expect_width * cinfo->output_components;
-  uint8_t *expect_data = new uint8_t[expect_sride * expect_hight];
-  uint8_t *out_ptr = expect_data;
+  int align_width = (cinfo->output_width % 2 == 0) ? cinfo->output_width : (cinfo->output_width - 1);
+  int align_hight = (cinfo->output_height % 2 == 0) ? cinfo->output_height : (cinfo->output_height - 1);
+  int align_stride = align_width * cinfo->output_components;
+  int align_size = align_stride * align_hight;
+  uint8_t *align_data = new uint8_t[align_size];
+  uint8_t *out_ptr = align_data;
 
   while (cinfo->output_scanline < cinfo->output_height) {
     /* jpeg_read_scanlines expects an array of pointers to scanlines.
@@ -148,9 +150,9 @@ static int do_read_jpeg_data(struct jpeg_decompress_struct *cinfo, JpgCodec *cod
     //memcpy(out_ptr, buffer[0], row_stride);
     //out_ptr += row_stride;
 
-    if (cinfo->output_scanline < expect_hight) {
-      memcpy(out_ptr, buffer[0], expect_sride);
-      out_ptr += expect_sride;
+    if (cinfo->output_scanline < align_hight) {
+      memcpy(out_ptr, buffer[0], align_stride);
+      out_ptr += align_stride;
     } 
   }
 
@@ -166,9 +168,9 @@ static int do_read_jpeg_data(struct jpeg_decompress_struct *cinfo, JpgCodec *cod
   /* This is an important step since it will release a good deal of memory. */
   jpeg_destroy_decompress(cinfo);
 
-  int nv12_stride = ALIGN_16(expect_width);
-  int nv12_width = expect_width;
-  int nv12_height = expect_hight;
+  int nv12_stride = ALIGN_16(align_width);
+  int nv12_width = align_width;
+  int nv12_height = align_hight;
   int nv12_size = nv12_stride * nv12_height * 3 / 2;
   uint8_t *nv12 = new uint8_t[nv12_size];
 
@@ -178,7 +180,7 @@ static int do_read_jpeg_data(struct jpeg_decompress_struct *cinfo, JpgCodec *cod
   std::cout << "nv12 size: " << nv12_size << std::endl;
   std::cout << "nv12 real size: " << (nv12_width * nv12_height * 3 / 2) << std::endl;
 
-  yuv444_to_nv12(nv12, nv12_stride, expect_data, expect_sride, nv12_width, nv12_height);
+  yuv444_to_nv12(nv12, nv12_stride, align_data, align_stride, nv12_width, nv12_height);
 
   codec->data = nv12;
   codec->width = nv12_width;
@@ -186,7 +188,7 @@ static int do_read_jpeg_data(struct jpeg_decompress_struct *cinfo, JpgCodec *cod
   codec->stride = nv12_stride;
 
   std::cout << "decode ok" << std::endl;
-  delete[] expect_data;
+  delete[] align_data;
   return 0;
 }
 
