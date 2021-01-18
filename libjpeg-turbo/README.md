@@ -7,6 +7,12 @@ YUVYUVYUVYUV
 YUVYUVYUVYUV
 YUVYUVYUVYUV
 ```
+**yuv补充像素**
+
+```
+白色：Y=0xff  U/V=0x80
+黑色：Y=0x00  U/V=0x80
+```
 
 **FFMPEG命令**
 nv12转jpg:
