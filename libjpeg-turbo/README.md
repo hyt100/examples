@@ -7,6 +7,16 @@ YUVYUVYUVYUV
 YUVYUVYUVYUV
 YUVYUVYUVYUV
 ```
+解压输出参数设为`JCS_RGB`时，输出的格式为RGB，每个像素三个字节，存储顺序为RGB，例如4x3存储如下：
+
+```
+RGBRGBRGBRGB
+RGBRGBRGBRGB
+RGBRGBRGBRGB
+```
+
+>输入为灰度图(JCS_GRAYSCALE)时，如果输出设为`JCS_YCbCr`时，将会解码失败。经测试，如果输入为`JCS_YCbCr`，输出设为`JCS_YCbCr`，输入为其他时，输出设为`JCS_RGB`，暂时未发现解码失败问题。
+
 **yuv补充像素**
 
 ```
