@@ -34,3 +34,14 @@ ffmpeg -y -s 650x850 -pix_fmt nv12 -i nv12.yuv image.jpg
 ```shell
 ffplay -f rawvideo -pixel_format nv12 -video_size 650x850  nv12.yuv 
 ```
+
+**libjpeg注意事项**
+
+1. 在使用默认错误处理结构jpeg_error_mgr的情况下，程序在遇到错误后将调用exit直接退出程序，用户如果不希望使用这种直接退出的方式处理错误的话就需要自定义错误处理结构；
+
+2. 操作结束后，如果还希望继续重用JPEG对象做另一个编解码操作，则可使用：
+
+​      jpeg_abort(&cinfo);
+
+
+
