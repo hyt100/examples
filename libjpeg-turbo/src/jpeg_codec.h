@@ -2,13 +2,22 @@
 
 #include <stdint.h>
 
-typedef struct {
-    uint8_t* data;
-    int stride;
+enum ImagePixFmt {
+    IMAGE_PIXFMT_NV12 = 0,
+    IMAGE_PIXFMT_RGB24
+};
+
+struct Frame
+{
+    ImagePixFmt fmt;
     int width;
     int height;
-} JpgCodec;
+    int stride[4];
+    uint8_t *plane[4];
+    uint8_t *data;
+};
 
-JpgCodec* JpgCreateCodec();
-int JpgDecode(JpgCodec* codec, uint8_t* buffer_data, uint64_t buffer_size);
-int JpgDestroyCodec(JpgCodec* codec);
+int image_alloc_frame(Frame **f);
+int image_free_frame(Frame **f);
+int image_save_frame(const char* filename, Frame *f);
+int image_decode(uint8_t *buf, int len, Frame *f);
