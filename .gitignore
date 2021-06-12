@@ -2,3 +2,4 @@ build/
 libjpeg-turbo/thirdpatry/
 libjpeg-turbo/.vscode/
 opencv4/build/
+glm/build/
