@@ -11,29 +11,25 @@
 using std::cout;
 using std::endl;
 
-// 结论：以世界坐标系为旋转轴，旋转"不会"发生 万向节死锁(gimbal lock)
 void rotate_test()
 {
-    //假定旋转顺序规则为：ZYX
-    glm::mat4 mat = glm::mat4(1.0f);
+    glm::mat4 mat1 = glm::rotate(glm::mat4(1.0f), (float)glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    glm::mat4 mat2 = glm::rotate(glm::mat4(1.0f), (float)glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 mat3 = glm::rotate(glm::mat4(1.0f), (float)glm::radians(20.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    printf("mat =>    %s \n", glm::to_string(mat1 * mat2 * mat3).c_str());
 
-    //初始矩阵：绕Y轴旋转90度
-    mat = glm::rotate(mat, (float)glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    mat1 = glm::rotate(glm::mat4(1.0f), (float)glm::radians(20.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    mat2 = glm::rotate(glm::mat4(1.0f), (float)glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    mat3 = glm::rotate(glm::mat4(1.0f), (float)glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    printf("mat =>    %s \n", glm::to_string(mat1 * mat2 * mat3).c_str());
 
-    glm::mat4 mat1 = glm::rotate(mat, (float)glm::radians(20.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    printf("x =>    %s \n", glm::to_string(mat1).c_str());
-
-    glm::mat4 mat2 = glm::rotate(mat, (float)glm::radians(20.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    printf("z =>    %s \n", glm::to_string(mat2).c_str());
-
-    //输出结果：两个矩阵不相同
+    //输出结果：两个矩阵相同。这个时候绕 x 轴旋转20度和绕 z 轴旋转 20 度得到的是完全一样的旋转矩阵。
 }
 
-// 结论：以物体local坐标系为旋转轴，旋转"会"发生 万向节死锁(gimbal lock)
 void euler_test()
 {
     //假定旋转顺序规则为：XYZ
-    glm::mat4 mat = glm::mat4(1.0f);
+    glm::mat4 mat;
     float x_angle = 0.0f, y_angle = 0.0f, z_angle = 0.0f;
 
     x_angle = 20.0f;
@@ -51,10 +47,27 @@ void euler_test()
     //输出结果：两个矩阵相同。这个时候绕 x 轴旋转20度和绕 z 轴旋转 20 度得到的是完全一样的旋转矩阵。
 }
 
+void other_test()
+{
+    // glm::mat4 mat = glm::mat4(1.0f, 2.0f, 3.0f, 4.0f,
+    //                             0.0f, 1.0f, 0.0f, 0.0f,
+    //                             0.0f, 0.0f, 1.0f, 0.0f,
+    //                             0.0f, 0.0f, 0.0f, 1.0f
+    //                             );
+    // glm::mat4 mmm = glm::translate(mat, glm::vec3(1.0f, 2.0f, 3.0f));
+    // printf("m =>    %s \n", glm::to_string(mmm).c_str());
+
+    // // glm::mat4 a = glm::mat4(1.0f);
+    // glm::mat4 aa = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 3.0f));
+    // printf("m =>    %s \n", glm::to_string(mat*aa).c_str());
+    // printf("m =>    %s \n", glm::to_string(aa*mat).c_str());
+}
+
 int main(int argc, char *argv[])
 {
     rotate_test();
-    euler_test();
+    // euler_test();
+    // other_test();
 
     return 0;
 }
