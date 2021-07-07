@@ -10,4 +10,4 @@ add_definitions(-g)
 
 aux_source_directory(src/ SRC)
 add_executable(${PROJECT_NAME} ${SRC})
-target_link_libraries(${PROJECT_NAME} jpeg)
+target_link_libraries(${PROJECT_NAME} jpeg turbojpeg)

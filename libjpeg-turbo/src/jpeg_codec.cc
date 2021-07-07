@@ -18,40 +18,6 @@ struct my_error_mgr {
 
 typedef struct my_error_mgr* my_error_ptr;
 
-int image_save_frame(const char* filename, Frame *f)
-{
-    if (f == nullptr || f->data == nullptr) {
-        std::cout << "invalid frame" << std::endl;
-        return -1;
-    }
-
-    FILE* fp = fopen(filename, "wb");
-    if (!fp) {
-        std::cout << "fopen failed" << std::endl;
-        return -1;
-    }
-
-    int rowbytes = f->width;
-    uint8_t* ptr;
-
-    //write Y
-    ptr = f->plane[0];
-    for (int i = 0; i < f->height; ++i) {
-        fwrite(ptr, rowbytes, 1, fp);
-        ptr += f->stride[0];
-    }
-
-    //write UV
-    ptr = f->plane[1];
-    for (int i = 0; i < f->height / 2; ++i) {
-        fwrite(ptr, rowbytes, 1, fp);
-        ptr += f->stride[1];
-    }
-
-    fclose(fp);
-    return 0;
-}
-
 static void rgb24_to_nv12(uint8_t* nv12, int nv12_stride, int nv12_width, int nv12_height, uint8_t* rgb, int rgb_stride)
 {
     int yIndex = 0;
@@ -286,36 +252,9 @@ ERROUT:
     return -1;
 }
 
-int image_decode(uint8_t *buf, int len, Frame *frame)
+int jpeg_decode(uint8_t *buf, int len, Frame *frame)
 {
     struct jpeg_decompress_struct cinfo;
     return do_read_jpeg_data(&cinfo, frame, buf, len);
 }
 
-int image_alloc_frame(Frame **f)
-{
-    Frame *frame = new Frame;
-    frame->width = 0;
-    frame->height = 0;
-    frame->data = nullptr;
-    for (auto i = 0; i < 4; ++i) {
-        frame->plane[i] = nullptr;
-        frame->stride[i] = 0;
-    }
-
-    *f = frame;
-    return 0;
-}
-
-int image_free_frame(Frame **f)
-{
-    if (f == nullptr || *f == nullptr)
-        return -1;
-
-    Frame *frame = *f;
-    delete frame->data;
-    delete frame;
-
-    *f = nullptr;
-    return 0;
-}
