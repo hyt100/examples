@@ -43,5 +43,6 @@ ffplay -f rawvideo -pixel_format nv12 -video_size 650x850  nv12.yuv
 
 ​      jpeg_abort(&cinfo);
 
+**libjpeg-turbo移植到android**
 
-
+可参考libjpeg-turbo源码的BUILDING.md文档。
