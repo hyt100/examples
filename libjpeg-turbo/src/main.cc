@@ -6,6 +6,8 @@
 
 // play yuv:
 //     ffplay -f rawvideo -pixel_format nv12 -video_size 650x850  nv12.yuv 
+//     ffplay -f rawvideo -pixel_format rgb24 -video_size 128x128 out.rgb
+//     ffplay -f rawvideo -pixel_format yuv420p -video_size 128x128 out.yuv
 
 void jpeg_decode_nv12_test()
 {
