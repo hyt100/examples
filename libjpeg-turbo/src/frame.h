@@ -6,6 +6,7 @@ enum ImagePixFmt {
     IMAGE_PIXFMT_NV12 = 0,
     IMAGE_PIXFMT_RGB24,
     IMAGE_PIXFMT_YUV420P,
+    IMAGE_PIXFMT_YUV,  //某种YUV格式
     IMAGE_PIXFMT_MAX
 };
 

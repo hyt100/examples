@@ -1,4 +1,5 @@
 #include "main.h"
+#include "frame.h"
 #include "jpeg_codec.h"
 #include "tjpeg_codec.h"
 #include <stdio.h>
@@ -6,7 +7,7 @@
 // play yuv:
 //     ffplay -f rawvideo -pixel_format nv12 -video_size 650x850  nv12.yuv 
 
-void jpeg_decode_test()
+void jpeg_decode_nv12_test()
 {
     FileReader file("../test_data/xiyang.jpeg");
     // FileReader file("../test_data/testorig.jpg");
@@ -24,7 +25,7 @@ void jpeg_decode_test()
     image_free_frame(&frame);
 }
 
-void tjpeg_encode_test()
+void tjpeg_encode_yuv420_test()
 {
     FileReader file("../test_data/lena_128x128.yuv");
     if (file.is_error())
@@ -43,12 +44,35 @@ void tjpeg_encode_test()
     frame.stride[0] = frame.width;
     frame.stride[1] = frame.width/2;
     frame.stride[2] = frame.width/2;
-    tjpeg_encode("out2.jpg", &frame);
+    tjpeg_encode("out_yuv240.jpg", &frame);
+}
+
+void tjpeg_encode_rgb_test()
+{
+    FileReader file("../test_data/lena_128x128.rgb24");
+    if (file.is_error())
+        return;
+    cout << "file size: " << file.size() << endl;
+
+    tjpeg_encode("out_rgb.jpg", file.data(), file.size(), 128, 128, IMAGE_PIXFMT_RGB24);
+}
+
+void tjpeg_decode_rgb_test()
+{
+    FileReader file("../test_data/lena_128x128.jpg");
+    if (file.is_error())
+        return;
+    cout << "file size: " << file.size() << endl;
+
+    tjpeg_decode("out.yuv", file.data(), file.size(), IMAGE_PIXFMT_YUV);
+    tjpeg_decode("out.rgb", file.data(), file.size(), IMAGE_PIXFMT_RGB24);
 }
 
 int main(int argc, char* argv[])
 {
-    // jpeg_decode_test();
-    tjpeg_encode_test();
+    // jpeg_decode_nv12_test();
+    // tjpeg_encode_yuv420_test();
+    // tjpeg_encode_rgb_test();
+    tjpeg_decode_rgb_test();
     return 0;
 }

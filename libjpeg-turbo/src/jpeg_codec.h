@@ -3,4 +3,4 @@
 #include "frame.h"
 
 
-int jpeg_decode(uint8_t *buf, int len, Frame *f);
+int jpeg_decode(uint8_t *buf, int len, Frame *f);  //support decode to nv12

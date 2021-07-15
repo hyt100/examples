@@ -24,7 +24,7 @@ int image_free_frame(Frame **f)
         return -1;
 
     Frame *frame = *f;
-    delete frame->data;
+    delete[] frame->data;
     delete frame;
 
     *f = nullptr;
