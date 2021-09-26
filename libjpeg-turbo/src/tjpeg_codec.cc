@@ -76,7 +76,7 @@ int tjpeg_encode(const char *filename, uint8_t *buf, int size, int width, int he
 
 int tjpeg_decode(const char *filename, uint8_t *buf, int size, ImagePixFmt format)
 {
-    if (format != IMAGE_PIXFMT_YUV && format != IMAGE_PIXFMT_RGB24) {
+    if (format != IMAGE_PIXFMT_YUV && format != IMAGE_PIXFMT_RGB24 && format != IMAGE_PIXFMT_GRAY) {
         printf("Not support pixel format. \n");
         return -1;
     }
@@ -88,7 +88,7 @@ int tjpeg_decode(const char *filename, uint8_t *buf, int size, ImagePixFmt forma
     }
 
     int img_width, img_height, img_subsamp, img_colorspace;
-    int flags = 0, pixelfmt = TJPF_RGB;
+    int img_channel;
 
     int ret = tjDecompressHeader3(handle, (unsigned char *)buf, size, &img_width, &img_height, &img_subsamp, &img_colorspace);
     if (0 != ret) {
@@ -96,18 +96,26 @@ int tjpeg_decode(const char *filename, uint8_t *buf, int size, ImagePixFmt forma
         printf("tjDecompressHeader3 failed: %s \n", tjGetErrorStr2(handle));
         return -1;
     }
+    if (img_colorspace == TJCS_GRAY) {
+        img_channel = 1;
+    } else {
+        img_channel = 3;
+    }
     printf("jpeg width: %d\n", img_width);
     printf("jpeg height: %d\n", img_height);
     printf("jpeg subsamp: %d\n", img_subsamp);
     printf("jpeg colorspace: %d\n", img_colorspace);
+    printf("jpeg channel: %d\n", img_channel);
 
     int img_size = img_width * img_height * 3;
     uint8_t *img_data = new uint8_t[img_size];
 
     if (format == IMAGE_PIXFMT_RGB24) {
         ret = tjDecompress2(handle, (unsigned char *)buf, size, img_data, img_width, 0, img_height, TJPF_RGB, 0);
-    } else {
+    } else if (format == IMAGE_PIXFMT_YUV) {
         ret = tjDecompressToYUV2(handle, (unsigned char *)buf, size, img_data, img_width, 1, img_height, 0);
+    } else {
+        ret = tjDecompress2(handle, (unsigned char *)buf, size, img_data, img_width, 0, img_height, TJPF_GRAY, 0);
     }
 
     if (0 != ret) {
@@ -119,7 +127,9 @@ int tjpeg_decode(const char *filename, uint8_t *buf, int size, ImagePixFmt forma
 
     if (format == IMAGE_PIXFMT_YUV) {
         // 解压后的YUV的格式，是由JPEG图片的采样格式决定的，如果JPEG本身是YUV420，则解压得到的YUV，就是YUV420格式。
-        img_size = tjBufSizeYUV2(img_width, 1, img_height, img_subsamp);
+        img_size = tjBufSizeYUV2(img_width, 1, img_height, img_subsamp); //注意如果img_subsamp等于TJSAMP_GRAY，那么只有Y通道，像素大小返回widht*height
+    } else if (format == IMAGE_PIXFMT_GRAY) {
+        img_size = img_width * img_height;
     }
 
     image_save_file(filename, img_data, img_size);

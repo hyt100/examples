@@ -8,6 +8,7 @@
 //     ffplay -f rawvideo -pixel_format nv12 -video_size 650x850  nv12.yuv 
 //     ffplay -f rawvideo -pixel_format rgb24 -video_size 128x128 out.rgb
 //     ffplay -f rawvideo -pixel_format yuv420p -video_size 128x128 out.yuv
+//     ffplay -f rawvideo -pixel_format gray  -video_size 512x512 out.gra
 
 void jpeg_decode_nv12_test()
 {
@@ -68,6 +69,19 @@ void tjpeg_decode_rgb_test()
 
     tjpeg_decode("out.yuv", file.data(), file.size(), IMAGE_PIXFMT_YUV);
     tjpeg_decode("out.rgb", file.data(), file.size(), IMAGE_PIXFMT_RGB24);
+    tjpeg_decode("out.gray", file.data(), file.size(), IMAGE_PIXFMT_GRAY);
+}
+
+void tjpeg_decode_gray_test()
+{
+    FileReader file("../test_data/lena_gray.jpg");
+    if (file.is_error())
+        return;
+    cout << "file size: " << file.size() << endl;
+
+    tjpeg_decode("out.yuv", file.data(), file.size(), IMAGE_PIXFMT_YUV); //输出单通道Y
+    tjpeg_decode("out.rgb", file.data(), file.size(), IMAGE_PIXFMT_RGB24);
+    tjpeg_decode("out.gray", file.data(), file.size(), IMAGE_PIXFMT_GRAY);
 }
 
 int main(int argc, char* argv[])
@@ -76,5 +90,6 @@ int main(int argc, char* argv[])
     // tjpeg_encode_yuv420_test();
     // tjpeg_encode_rgb_test();
     tjpeg_decode_rgb_test();
+    // tjpeg_decode_gray_test();
     return 0;
 }
