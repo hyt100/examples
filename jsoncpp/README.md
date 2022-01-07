@@ -16,6 +16,13 @@
 
 - 创建空数组对象的方法是：Json::Value arr(Json::ValueType::arrayValue);
 
+- jsoncpp原样输出中文：
+
+``` cpp
+Json::StreamWriterBuilder writeBuilder;
+writeBuilder.settings_["emitUTF8"] = true;
+```
+
 **参考资料**
 
 https://cloud.tencent.com/developer/article/1495836
