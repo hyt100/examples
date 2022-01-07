@@ -14,6 +14,8 @@
 
 - 删除，Object时删除某个key使用removeMember()接口，Array时删除某个元素使用removeIndex接口指定元素的下标。
 
+- 创建空数组对象的方法是：Json::Value arr(Json::ValueType::arrayValue);
+
 **参考资料**
 
 https://cloud.tencent.com/developer/article/1495836
