@@ -61,14 +61,14 @@ def generateCube(w, h, t, color, transform):
     return [{'coords':coords, 'faces': faces, 'colors': colors}]
 
 def calOBB(points):
-    # 重新计算中心点
-    center = np.array([0.0, 0.0, 0.0])
+    # 去中心化：计算均值，将原始样本减去均值
+    mean = np.array([0.0, 0.0, 0.0])
     for p in points:
-        center += p
-    center /= len(points)
-    pointsNew = [d - center for d in points]
+        mean += p
+    mean /= len(points)
+    pointsNew = [d - mean for d in points]
 
-    # 构造协方差矩阵
+    # 构造协方差矩阵 (是一个关于对角线对称的矩阵)
     m00, m10, m11, m20, m21, m22 = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
     for i in range(len(pointsNew)):
         m00 += pointsNew[i][0] * pointsNew[i][0]
@@ -87,11 +87,12 @@ def calOBB(points):
                     [m10, m11, m21], 
                     [m20, m21, m22]])
     
-    # 计算协方差矩阵的特征值和特征向量
+    # 计算协方差矩阵的特征值和特征向量 (eigval数组包含了所有的特征值，eigvec数组包含了与前面特征值对应的特征向量)
+    # 这里numpy的特征向量要按列取值
     eigval, eigvec = np.linalg.eigh(mat)
-    print(eigval, '\n', eigvec)
+    print('value:', eigval, '\nvector:\n', eigvec)
 
-    # 施密特正交化
+    # 施密特正交化 (我们任选两个方向，然后正交化)
     xAxis = np.array([eigvec[0][0], eigvec[1][0], eigvec[2][0]])
     yAxis = np.array([eigvec[0][1], eigvec[1][1], eigvec[2][1]])
     zAxis = np.cross(xAxis, yAxis)
@@ -100,28 +101,46 @@ def calOBB(points):
     yAxis /= np.linalg.norm(yAxis)
     zAxis /= np.linalg.norm(zAxis)
 
-    # 将点投影到各个方向，求出sacle系数
-    xMag, yMag, zMag = 0.0, 0.0, 0.0
-    for p in pointsNew:
-        xMag = max(xMag, fabs(np.dot(xAxis, p)))
-        yMag = max(yMag, fabs(np.dot(yAxis, p)))
-        zMag = max(zMag, fabs(np.dot(zAxis, p)))
-    xMag /= 0.5
-    yMag /= 0.5
-    zMag /= 0.5
+    # 计算旋转矩阵
+    rotation3x3 = np.array([[xAxis[0], yAxis[0], zAxis[0]], 
+                         [xAxis[1], yAxis[1], zAxis[1]], 
+                         [xAxis[2], yAxis[2], zAxis[2]]])
+    rotation3x3Inv = np.transpose(rotation3x3)
+
+    # 将新样本变换到Local下 (如果是变换原始样本到local下，我们可以先平移-mean大小)
+    pointsLocal = []
+    for i in range(len(pointsNew)):
+        pointsLocal.append(np.dot(rotation3x3Inv, pointsNew[i]))
+
+    # 计算AABB中心和size
+    minp, maxp = pointsLocal[0].copy(), pointsLocal[0].copy()
+    for i in range(len(pointsLocal)):
+        p = pointsLocal[i]
+        minp[0] = min(minp[0], p[0])
+        maxp[0] = max(maxp[0], p[0])
+        minp[1] = min(minp[1], p[1])
+        maxp[1] = max(maxp[1], p[1])
+        minp[2] = min(minp[2], p[2])
+        maxp[2] = max(maxp[2], p[2])
+    xLen = maxp[0] - minp[0]
+    yLen = maxp[1] - minp[1]
+    zLen = maxp[2] - minp[2]
+    centerLocal = (minp + maxp) / 2.0
+    centerWorld = np.dot(rotation3x3, centerLocal)
+    centerWorld = centerWorld + mean
     
-    # 计算OBB的worldMatrix
-    translation = np.array([[1.0, 0.0, 0.0, center[0]], 
-                            [0.0, 1.0, 0.0, center[1]], 
-                            [0.0, 0.0, 1.0, center[2]],
+    # 计算OBB的worldMatrix (假定我们求得OBB在local坐标系下是一个1x1x1的单位正方体，经过worldMatrix变换后可以得到OBB)
+    translation = np.array([[1.0, 0.0, 0.0, centerWorld[0]], 
+                            [0.0, 1.0, 0.0, centerWorld[1]], 
+                            [0.0, 0.0, 1.0, centerWorld[2]],
                             [0.0, 0.0, 0.0, 1.0]])
     rotation = np.array([[xAxis[0], yAxis[0], zAxis[0], 0.0], 
                          [xAxis[1], yAxis[1], zAxis[1], 0.0], 
                          [xAxis[2], yAxis[2], zAxis[2], 0.0],
                          [0.0, 0.0, 0.0, 1.0]])
-    scale = np.array([[xMag, 0.0, 0.0, 0.0], 
-                      [0.0, yMag, 0.0, 0.0], 
-                      [0.0, 0.0, zMag, 0.0],
+    scale = np.array([[xLen, 0.0, 0.0, 0.0], 
+                      [0.0, yLen, 0.0, 0.0], 
+                      [0.0, 0.0, zLen, 0.0],
                       [0.0, 0.0, 0.0, 1.0]])
     worldMatrix = translation @ rotation @ scale
     return worldMatrix
@@ -138,7 +157,7 @@ points = [
 ]
 
 worldMatrix = calOBB(points)
-print(worldMatrix)
+# print(worldMatrix)
 obbWorld = generateCube(1, 1, 1, [255, 0, 0], worldMatrix)
 saveobj(obbWorld, 'obb.obj')
 savepoints(points, 'points.obj')
