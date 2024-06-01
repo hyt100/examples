@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app">
+        msg: {{msg}} + {{n}}
+        <h2>{{ web.inputvalu }}</h2>
+        <h2>{{ web.url }}</h2>
+        <h2>{{ arr }}</h2>
+        <button v-on:click="change">change</button>
+        <input type="shuru" @keyup.enter="trigg" v-model="web.inputvalu">
+        <p v-if="web.display">display</p>
+        <img :src="web.img" alt="">
+        <hr/>
+        <ul>
+            <template v-for="v in web.data">
+                <div>{{v}}</div>
+            </template>
+        </ul>
+        <div v-text="web.title"></div>
+    </div>
+    
+    <script type="module">
+        import { createApp, reactive, ref } from './vue.esm-browser.js'
+        createApp({
+            setup() {
+                const web = reactive({
+                    title:"xxx",
+                    url:"www.com",
+                    display: true,
+                    img: '2024.png',
+                    data: ['1', '2', '3'],
+                    inputvalu: 0
+                })
+                const n = ref(100)
+                const arr = ref([1,2,3])
+
+                const change = () => {
+                    web.display = !web.display
+                    web.img = '2025.png'
+                }
+
+                const trigg = () => {
+                    console.log('.........')
+                    web.title = 'tri...........'
+                    web.img = '2024.png'
+                }
+
+                return {
+                    msg: "success",
+                    web,
+                    n,
+                    change,
+                    arr,
+                    trigg
+                }
+            }
+        }).mount("#app")
+    </script>
+</body>
+</html>
